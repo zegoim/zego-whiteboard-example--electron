@@ -1,0 +1,238 @@
+@font-face {
+  font-family: 'ZgFont';
+  src: url('./lib/SourceHanSansSC-Regular.otf');
+  /*Firefox, Chrome, Safari, Opera*/
+}
+body {
+  font-size: 12px !important;
+}
+
+.login_container {
+  overflow: hidden;
+}
+.whiteboard_container,
+.ele_btn_file,
+.ele_btns_cache {
+  display: none;
+}
+.mobile_bottom_container {
+  display: none;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background-color: rgba(0, 0, 0, 0.3);
+  padding: 4px;
+}
+
+.bg-f2 {
+  background-color: #f8f9fa;
+}
+
+#app {
+  font-family: ZgFont, Avenir, Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-align: center;
+  color: #2c3e50;
+  user-select: none;
+}
+
+.top-bar {
+  background-color: #fff;
+  border-bottom: 1px solid #cccccc;
+  margin: 1rem 0;
+}
+
+.main-container {
+  height: 100vh;
+  border-right: 1px solid #cccccc;
+  display: flex;
+  flex-direction: column;
+  padding: 0 16px;
+}
+.main-container_full {
+  flex: 1 !important;
+  max-width: 100% !important;
+  padding: 0 !important;
+}
+
+.panel-container {
+  position: relative;
+  z-index: 1;
+}
+
+.panel {
+  display: none;
+}
+
+#nav-tabContent .tab-pane form {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 60px;
+  bottom: 0;
+  padding: 0 10px;
+  overflow-x: hidden;
+  overflow-y: scroll;
+}
+
+.whiteboard-box {
+  flex: 1;
+}
+
+.whiteboard-area {
+  position: relative;
+  margin: 0 auto;
+  width: 60vw;
+  height: 33.75vw;
+  border: 1px dashed #ddd;
+  background-color: aliceblue;
+  transition: width 0.1s, height 0.1s;
+}
+.whiteboard-area_full {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.thumbnail {
+  display: none;
+  z-index: 10;
+  width: 200px;
+  height: 100vh;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  overflow: scroll;
+  padding: 36px 10px;
+  background-color: #f8f9fa;
+}
+
+.close-thumbnail {
+  cursor: pointer;
+}
+
+#thumbnail-list img {
+  width: 100%;
+  margin-bottom: 5px;
+}
+
+#excel-select {
+  display: none;
+}
+
+.drawBox {
+  border: 1px dashed #ccc;
+  margin: 15px 0;
+}
+
+.row.drawBox {
+  margin: 15px 0 !important;
+}
+
+#flipPage {
+  max-width: 46px;
+}
+
+.error-toast {
+  z-index: 100;
+  left: 50%;
+  top: 0;
+  transform: translate(-50%, 0);
+}
+
+.toast {
+  background-color: #444;
+}
+
+.toast-body {
+  padding: 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  color: #fff;
+}
+
+.menu-btn,
+.menu-mask {
+  display: none;
+}
+
+.operation-container {
+  display: block;
+  padding: 0;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.tab-content-box {
+  height: 100%;
+  padding-bottom: 32px;
+  overflow-y: scroll;
+}
+
+@media screen and (orientation: portrait) and (max-width: 575px) {
+  .menu-mask {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 10;
+    background-color: rgba(0, 0, 0, 0.5);
+  }
+  .menu-btn {
+    display: block;
+    position: absolute;
+    top: 0;
+    right: 0;
+    z-index: 100;
+  }
+  .operation-container {
+    display: none;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    width: 80%;
+    z-index: 99;
+    background-color: #fff;
+  }
+  .whiteboard-area {
+    width: 90vw;
+    height: 50.625vw;
+  }
+}
+
+#leaveRoom {
+  border: none;
+  cursor: pointer;
+}
+
+.whiteboard-page {
+  width: 60px;
+  text-align: center;
+  line-height: 1.25;
+  padding-left: 0;
+  padding-right: 0;
+}
+.whiteboard-step {
+  width: 30px;
+  text-align: center;
+  line-height: 1.25;
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.nav-tabs .nav-link {
+  padding: 0.5rem 0.3rem;
+  border: none;
+}
+
+.vc-switch {
+  bottom: 0 !important;
+}
+
+.btn {
+  font-size: 12px !important;
+}

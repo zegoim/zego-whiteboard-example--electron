@@ -1,0 +1,16 @@
+{
+  "name": "zego-express-docsview-electron",
+  "version": "1.22.0",
+  "description": "zego docsview electron sdk",
+  "author": "zego.im",
+  "main": "index.js",
+  "scripts": {},
+  "keywords": [
+    "zego",
+    "express",
+    "docsview",
+    "electron",
+    "sdk"
+  ],
+  "license": "ISC"
+}

@@ -1,0 +1,19 @@
+{
+  "name": "zego-whiteboard-electron",
+  "version": "1.0.0",
+  "description": "A minimal Electron application",
+  "main": "main.js",
+  "author": "zego frontend",
+  "scripts": {
+    "start": "electron .",
+    "pack:mac": "electron-builder build --config pack.config.js -m",
+    "pack:win": "electron-builder build --config pack.config.js -w"
+  },
+  "dependencies": {
+    "electron-localstorage": "^1.0.5"
+  },
+  "devDependencies": {
+    "electron": "5.0.12",
+    "electron-builder": "^22.9.1"
+  }
+}
