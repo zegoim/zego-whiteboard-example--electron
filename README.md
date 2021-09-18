@@ -11,19 +11,12 @@ ZegoWhiteboardExample 是集成即构[互动白板 SDK](https://doc-zh.zego.im/a
 
 # 启动
 
-为了让开发者前期能快速体验功能效果，请先填写 sdk/init.js 文件中相关配置中的 appID 和 appSignStr，然后在当前项目目录下运行以下命令即可启动应用程序。
+为了让开发者前期能快速体验功能效果，请先填写 zego-whiteboard-example-electron/key_center.js 文件中相关配置中的 appID 和 appSignStr，然后在当前项目目录下运行以下命令即可启动应用程序。
 
 ```JavaScript
 // APP 账号
-var _openConfig = {
-    appID: 0, // 请填写自己申请的 APPID
-    appSignStr: '', // 请填写自己申请的 APPSIGN
-    sdkPath: {
-        express: './sdk/zego-express-engine-electron/ZegoExpressEngine.js',
-        expressWb: './sdk/zego-express-engine-electron/ZegoWhiteBoardView.js',
-        docs: './sdk/zego-express-docsview-electron'
-    }
-};
+var YOUR_appID = 0 // 请填写自己申请的 APPID
+var YOUR_appSignStr = '' // 请填写自己申请的 APPSIGN
 ```
 
 ```shell
