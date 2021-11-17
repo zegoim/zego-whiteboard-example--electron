@@ -13,26 +13,44 @@ var ZegoExpressDocs = require(zegoConfig.sdkPath.docs);
 
 var logDir = zegoConfig.logDirs[require('os').platform()];
 
+var zegoWhiteboard;
+var zegoDocs;
+
 // 初始化 zegoExpressEngine
-zegoExpressEngine.init(zegoConfig.appID, zegoConfig.appSignStr, !!zegoConfig.whiteboard_env, 0);
-zegoExpressEngine.setEngineConfig &&
-    zegoExpressEngine.setEngineConfig({
-        logConfig: { logPath: logDir }
-    });
+(
+    async function () {
+        zegoExpressEngine.setEngineConfig &&
+            zegoExpressEngine.setEngineConfig({
+                logConfig: {
+                    logPath: logDir,
+                    logSize: 5 * 1024 * 1024
+                }
+            });
 
-// 初始化 ZegoWhiteboard
-var zegoWhiteboard = new ZegoWhiteBoard();
+        await zegoExpressEngine.initWithProfile({
+            appID: zegoConfig.appID,
+            appSign: zegoConfig.appSignStr,
+            scenario: 0
+        });
 
-// 初始化 ZegoDocs
-var zegoDocs = new ZegoExpressDocs({
-    appID: zegoConfig.appID,
-    appSign: zegoConfig.appSign,
-    dataFolder: logDir,
-    cacheFolder: logDir,
-    logFolder: logDir,
-    isTestEnv: !!zegoConfig.docs_env
-});
-
+        // 初始化 ZegoWhiteboard
+        zegoWhiteboard = new ZegoWhiteBoard();
+        // 初始化 ZegoDocs
+        zegoDocs = new ZegoExpressDocs({
+            appID: zegoConfig.appID,
+            appSign: zegoConfig.appSign,
+            dataFolder: logDir,
+            cacheFolder: logDir,
+            logFolder: logDir
+        });
+        switch (zegoConfig.docs_env) {
+            case 'beta':
+            case 'alpha':
+                zegoDocs.setConfig('set_alpha_env', true);
+                break;
+        }
+    }
+)()
 // 业务数据
 var userIDList = [];
 
@@ -47,9 +65,13 @@ function loginRoom() {
             }
         });
         zegoExpressEngine.loginRoom(
-            zegoConfig.roomid,
-            { userID: zegoConfig.userid, userName: zegoConfig.username },
-            { maxMemberCount: 10, isUserStatusNotify: true }
+            zegoConfig.roomid, {
+                userID: zegoConfig.userid,
+                userName: zegoConfig.username
+            }, {
+                maxMemberCount: 10,
+                isUserStatusNotify: true
+            }
         );
         resolve();
     });

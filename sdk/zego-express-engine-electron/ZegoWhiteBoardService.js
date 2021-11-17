@@ -591,6 +591,24 @@ class ZegoWhiteBoardService extends EventEmitter {
     }) {
         return this.zego_white_board_.zego_whiteboard_canvas_draw_path({ whiteboard_id, x, y });
     }
+
+    /**
+     * 向指定白板的虚拟画布绘制涂鸦点(x和y均为浮点型参数)
+     * @param {object} option - 参数对象
+     * @param {number} option.whiteboard_id - 白板id
+     * @param {number} option.x - 涂鸦点 坐标 x
+     * @param {number} option.y - 涂鸦点 坐标 y
+     */
+     whiteboardCanvasDrawPathFloat({
+        whiteboard_id,
+        x,
+        y
+    }) {
+        return this.zego_white_board_.zego_whiteboard_canvas_draw_path_float({ whiteboard_id, x, y });
+    }
+
+
+
     /**
      * 向指定白板的虚拟画布绘制简单文本
      * @param {object} option - 参数对象

@@ -1,15 +1,17 @@
 {
-  "name": "zego-express-engine-electron",
-  "version": "0.23.2-455-whiteboard",
-  "main": "ZegoExpressEngine.js",
-  "author": "zego.im",
-  "description": "zego-express-engine-electron",
-  "keywords": [
-    "zego",
-    "express",
-    "sdk",
-    "electron",
-    "node"
-  ],
-  "license": "ISC"
+    "name": "zego-express-engine-electron",
+    "version": "0.25.2.662_whiteboard",
+    "main": "ZegoExpressEngine.js",
+    "author": "zego.im",
+    "description": "zego-express-engine-electron",
+    "keywords": [
+        "zego",
+        "express",
+        "sdk",
+        "electron",
+        "node"
+    ],
+    "license": "ISC",
+    "build_number": "662",
+    "business_type": "whiteboard"
 }

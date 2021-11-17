@@ -161,6 +161,8 @@ class ZegoMediaPlayer extends EventEmitter {
             this.localGLRender.enablePreserveDrawingBuffer(view.preserveDrawingBuffer);
             this.localGLRender.initBkColor(view.backgroundColor);
             this.localGLRender.initGLfromCanvas(view.canvas);
+            
+            this.nativeMediaPlayer.setPlayerCanvas({});
         }
     }
 
@@ -232,6 +234,20 @@ class ZegoMediaPlayer extends EventEmitter {
     }
 
     /**
+     * Take a screenshot of the current playing screen of the media player.
+     *
+     * Only in the case of calling `setPlayerCanvas` to set the display controls and the playback state, can the screenshot be taken normally
+     * @return {Promise<number, string>} - snapshot error code(errorCode) and base64 string of the image in jpg format(image)
+     */
+    takeSnapshot(){
+        return this.nativeMediaPlayer.takeSnapshot({});
+    }
+
+    getCustomVideoCapturePlugin(){
+        return this.nativeMediaPlayer.getCustomVideoCapturePlugin();
+    }
+
+    /**
      * @event ZegoMediaPlayer#onMediaPlayerStateUpdate
      * @desc The callback triggered when the state of the media player changes.
      *
@@ -262,10 +278,10 @@ class ZegoMediaPlayer extends EventEmitter {
             if (arguments[0] === "onVideoData") {
                 if(this.localGLRender){
                     let videoFrame = {
-                    "videoFrameParam": arguments[1]["videoFrameParam"],
-                    "videoFrameBuffer": Buffer.from(arguments[1]["videoFrameBuffer"])
-                    }
-                    this.localGLRender.drawVideoFrame(videoFrame);
+                        "videoFrameParam": arguments[1]["videoFrameParam"],
+                        "videoFrameBuffer": Buffer.from(arguments[1]["videoFrameBuffer"])
+                        }
+                        this.localGLRender.drawVideoFrame(videoFrame);
                 }
             }
         } catch (error) {

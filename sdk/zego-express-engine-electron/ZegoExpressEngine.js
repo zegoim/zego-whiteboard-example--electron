@@ -22,7 +22,7 @@ const ZegoNativeSDK = require(ZegoExpressNodeNativePath);
 const PackageJson = require('./package.json');
 const WebGLRender = require('./ZegoExpressWebgl');
 const ZegoMediaPlayer = require('./ZegoExpressMediaPlayer');
-const {ZegoPublishChannel, ZegoViewMode, ZegoPlayerVideoLayer} = require('./ZegoExpressDefines');
+const {ZegoPublishChannel, ZegoViewMode, ZegoPlayerVideoLayer, ZegoCapturePipelineScaleMode} = require('./ZegoExpressDefines');
 
 /**
  * ZegoExpressEngine
@@ -33,18 +33,18 @@ class ZegoExpressEngine extends EventEmitter {
      * Initializes the Engine.
      *
      * The engine needs to be initialized before calling other functions
-     * @param {number} appID - Application ID issued by ZEGO for developers, please apply from the ZEGO Admin Console https://console-express.zego.im The value ranges from 0 to 4294967295.
-     * @param {string} appSign - Application signature for each AppID, please apply from the ZEGO Admin Console. Application signature is a 64 character string. Each character has a range of '0' ~ '9', 'a' ~ 'z'.
-     * @param {boolean} isTestEnv - Choose to use a test environment or a formal commercial environment, the formal environment needs to submit work order configuration in the ZEGO management console. The test environment is for test development, with a limit of 10 rooms and 50 users. Official environment App is officially launched. ZEGO will provide corresponding server resources according to the configuration records submitted by the developer in the management console. The test environment and the official environment are two sets of environments and cannot be interconnected.
-     * @param {ZegoScenario} scenario - The application scenario. Developers can choose one of ZegoScenario based on the scenario of the app they are developing, and the engine will preset a more general setting for specific scenarios based on the set scenario. After setting specific scenarios, developers can still call specific functions to set specific parameters if they have customized parameter settings.
+     * @param {ZegoEngineProfile} profile - The basic configuration information is used to create the engine.
      */
-    init(appID, appSign, isTestEnv, scenario){
+     initWithProfile(profile){
         let tsfn = this.callEmit.bind(this);
         const that = this;
-        that.isTestEnv = isTestEnv;
-        that.appID = appID;
+        that.appID = profile.appID;
+
+        //get electron sdk version
+        var SdkVersion = this.getVersion();
+
         return new Promise(function (resolve, reject) {
-            that.ZegoNativeInstance = ZegoNativeSDK.CreateEngine({ appID, appSign, isTestEnv, scenario, tsfn })
+            that.ZegoNativeInstance = ZegoNativeSDK.CreateEngineWithProfile({ profile, tsfn, SdkVersion });
             if (that.ZegoNativeInstance === undefined) {
                 reject("Zego Express init failed");
             }
@@ -120,6 +120,27 @@ class ZegoExpressEngine extends EventEmitter {
      */
     setDebugVerbose(enable, language){
         this.ZegoNativeInstance.setDebugVerbose({enable, language});
+    }
+
+    isConsolePrintDebugInfo = false;
+    /**
+     * Turns on/off print debugging info on the console
+     * 
+     * @param {boolean} enable - Detailed debugging information switch
+     */
+     enableConsolePrintDebugInfo(enable) {
+         this.isConsolePrintDebugInfo = enable;
+     }
+
+    /**
+     * Call the RTC experimental API
+     *
+     * ZEGO provides some technical previews or special customization functions in RTC business through this API. If you need to get the use of the function or the details, please consult ZEGO technical support
+     * @param {string} params - You need to pass in a parameter in the form of a JSON string
+     * @return {string} - Returns an argument in the format of a JSON string
+     */
+    callExperimentalAPI(params){
+        return this.ZegoNativeInstance.callExperimentalAPI({params});
     }
 
     /**
@@ -259,11 +280,13 @@ class ZegoExpressEngine extends EventEmitter {
      */
     startPreview(view, channel = ZegoPublishChannel.Main){
         view = Object.assign({ viewMode: ZegoViewMode.AspectFit, backgroundColor: 0x000000, preserveDrawingBuffer:false }, view);
+        
         this.VideoViewManager.localGLRenders[channel] = new WebGLRender();
         this.VideoViewManager.localGLRenders[channel].setViewMode(view.viewMode);
         this.VideoViewManager.localGLRenders[channel].enablePreserveDrawingBuffer(view.preserveDrawingBuffer);
         this.VideoViewManager.localGLRenders[channel].initBkColor(view.backgroundColor);
-        this.VideoViewManager.localGLRenders[channel].initGLfromCanvas(view.canvas);
+        this.VideoViewManager.localGLRenders[channel].initGLfromCanvas(view.canvas); 
+        
         this.ZegoNativeInstance.startPreview({ channel });
     }
 
@@ -275,7 +298,12 @@ class ZegoExpressEngine extends EventEmitter {
      */
     stopPreview(channel = ZegoPublishChannel.Main){
         this.ZegoNativeInstance.stopPreview({ channel });
-        this.VideoViewManager.localGLRenders[channel] = null;
+        if(this.VideoViewManager.localGLRenders[channel])
+        {
+            this.VideoViewManager.localGLRenders[channel].uninit2d();
+            this.VideoViewManager.localGLRenders[channel] = null;
+        }
+
     }
 
     /**
@@ -332,6 +360,18 @@ class ZegoExpressEngine extends EventEmitter {
      */
     getAudioConfig(){
         return this.ZegoNativeInstance.getAudioConfig({});
+    }
+
+    /**
+     * Take a snapshot of the publishing stream (for the specified channel).
+     *
+     * Please call this function after calling [startPublishingStream] or [startPreview]
+     * The resolution of the snapshot is the encoding resolution set in [setVideoConfig]. If you need to change it to capture resolution, please call [setCapturePipelineScaleMode] to change the capture pipeline scale mode to [Post]
+     * @param {ZegoPublishChannel} channel - Publish stream channel
+     * @return {Promise<number, string>} - snapshot error code(errorCode) and base64 string of the image in jpg format(image)
+     */
+    takePublishStreamSnapshot(channel = ZegoPublishChannel.Main){
+        return this.ZegoNativeInstance.takePublishStreamSnapshot({channel});
     }
 
     /**
@@ -525,6 +565,7 @@ class ZegoExpressEngine extends EventEmitter {
     startPlayingStream(streamID, view, config = { cdnConfig: null, videoLayer: ZegoPlayerVideoLayer.Auto }){
         view = Object.assign({ viewMode: ZegoViewMode.AspectFit, backgroundColor: 0x000000, preserveDrawingBuffer:false }, view);
         config = Object.assign({ cdnConfig: null, videoLayer: ZegoPlayerVideoLayer.Auto }, config);
+    
         this.VideoViewManager.remoteGLRenders[streamID] = new WebGLRender();
         this.VideoViewManager.remoteGLRenders[streamID].setViewMode(view.viewMode);
         this.VideoViewManager.remoteGLRenders[streamID].enablePreserveDrawingBuffer(view.preserveDrawingBuffer);
@@ -541,7 +582,22 @@ class ZegoExpressEngine extends EventEmitter {
      */
     stopPlayingStream(streamID){
         this.ZegoNativeInstance.stopPlayingStream({ streamID });
-        this.VideoViewManager.remoteGLRenders[streamID] = null;
+        if(this.VideoViewManager.remoteGLRenders[streamID])
+        {
+            this.VideoViewManager.remoteGLRenders[streamID].uninit2d();
+            this.VideoViewManager.remoteGLRenders[streamID] = null;
+        }
+    }
+
+    /**
+     * Take a snapshot of the playing stream.
+     *
+     * Please call this function after calling [startPlayingStream]
+     * @param {string} streamID - Stream ID to be snapshot
+     * @return {Promise<number, string>} - snapshot error code(errorCode) and base64 string of the image in jpg format(image)
+     */
+    takePlayStreamSnapshot(streamID){
+        return this.ZegoNativeInstance.takePlayStreamSnapshot({streamID});
     }
 
     /**
@@ -870,6 +926,22 @@ class ZegoExpressEngine extends EventEmitter {
     }
 
     /**
+     * Get the audio device information currently in use.
+     *
+     * Available since: 2.12.0
+     * Description: Get the audio device information currently in use.
+     * Use cases: Used for scenes that need to manually switch between multiple audio devices.
+     * When to call: After creating the engine.
+     * Restrictions: Only supports desktop.
+     * Related APIs: The default audio device ID can be obtained through [getDefaultAudioDeviceID].
+     * @param {ZegoAudioDeviceType} deviceType - Audio device type.Required:Yes.
+     * @return {ZegoDeviceInfo} - Audio device information.
+     */
+    getCurrentAudioDevice(deviceType){
+        return this.ZegoNativeInstance.getCurrentAudioDevice({deviceType});
+    }
+
+    /**
      * Enables or disables acoustic echo cancellation (AEC).
      *
      * Turning on echo cancellation, the SDK filters the collected audio data to reduce the echo component in the audio.
@@ -1166,15 +1238,105 @@ class ZegoExpressEngine extends EventEmitter {
     }
 
     /**
-     * Call the RTC experimental API
+     * Initializes the Engine.
      *
-     * ZEGO provides some technical previews or special customization functions in RTC business through this API. If you need to get the use of the function or the details, please consult ZEGO technical support
-     *
-     * @param params You need to pass in a parameter in the form of a JSON string
-     * @return Returns an argument in the format of a JSON string
+     * The engine needs to be initialized before calling other functions
+     * @param {number} appID - Application ID issued by ZEGO for developers, please apply from the ZEGO Admin Console https://console-express.zego.im The value ranges from 0 to 4294967295.
+     * @param {string} appSign - Application signature for each AppID, please apply from the ZEGO Admin Console. Application signature is a 64 character string. Each character has a range of '0' ~ '9', 'a' ~ 'z'.
+     * @param {boolean} isTestEnv - Choose to use a test environment or a formal commercial environment, the formal environment needs to submit work order configuration in the ZEGO management console. The test environment is for test development, with a limit of 10 rooms and 50 users. Official environment App is officially launched. ZEGO will provide corresponding server resources according to the configuration records submitted by the developer in the management console. The test environment and the official environment are two sets of environments and cannot be interconnected.
+     * @param {ZegoScenario} scenario - The application scenario. Developers can choose one of ZegoScenario based on the scenario of the app they are developing, and the engine will preset a more general setting for specific scenarios based on the set scenario. After setting specific scenarios, developers can still call specific functions to set specific parameters if they have customized parameter settings.
+     * @deprecated This method has been deprecated after version 0.25.3, please use the [initWithProfile] function to replace.
      */
-     callExperimentalAPI(params){
-        this.ZegoNativeInstance.callExperimentalAPI({params});
+     init(appID, appSign, isTestEnv, scenario){
+        let tsfn = this.callEmit.bind(this);
+        const that = this;
+        that.isConsolePrintDebugInfo = isTestEnv;
+        that.appID = appID;
+
+        //get electron sdk version
+        var SdkVersion = this.getVersion();
+
+        return new Promise(function (resolve, reject) {
+            that.ZegoNativeInstance = ZegoNativeSDK.CreateEngine({ appID, appSign, isTestEnv, scenario, tsfn, SdkVersion})
+            if (that.ZegoNativeInstance === undefined) {
+                reject("Zego Express init failed");
+            }
+            else {
+                that.VideoViewManager = {
+                    localGLRenders: [],
+                    remoteGLRenders: []
+                };
+                that.mediaPlayers = [];
+                console.log("Zego Express init succeed");
+                resolve();
+            };
+        });
+    }
+
+    /**
+     * Enables or disables custom video processing.
+     *
+     * When developers to open before the custom processing, by calling [setCustomVideoCaptureHandler] can be set up to receive a custom video processing of the original video data
+     * Precondition： Call [CreateEngine] to initialize the Zego SDK
+     * Call timing： must be set before calling [startPreview], [startPublishingStream]; The configuration cannot be changed again until the [logoutRoom] is called, otherwise the call will not take effect
+     * Supported version： 2.2.0
+     * @param {boolean} enable - enable or disable. disable by default
+     * @param {ZegoPublishChannel} channel - Publishing stream channel
+     */
+    enableCustomVideoProcess(enable, channel){
+        this.ZegoNativeInstance.enableCustomVideoProcess({enable, channel});
+    }
+
+	/**
+     * register custom video process plugin
+     *
+     * @param {Number} plugin - video process plugin
+     * @param {ZegoPublishChannel} channel - publish channel
+     */
+    registerCustomVideoProcessPlugin(plugin, channel = ZegoPublishChannel.Main){
+        this.ZegoNativeInstance.registerCustomVideoProcessPlugin({plugin, channel});
+    }
+
+    /**
+     * set custom video process cut region
+     *
+     * @param {Number} left - left cutting length (px)
+     * @param {Number} top - top cutting length (px)
+     * @param {Number} right - right cutting length (px)
+     * @param {Number} bottom - bottom cutting length (px)
+     * @param {ZegoPublishChannel} channel - Publishing stream channel
+     */
+    setCustomVideoProcessCutRegion(left, top, right, bottom, channel = ZegoPublishChannel.Main){
+        this.ZegoNativeInstance.setCustomVideoProcessCutRegion({left, top, right, bottom, channel});
+    }
+
+    /**
+     * Set play video stream type.
+     *
+     * Description: When the publish stream sets the codecID to SVC through [setVideoConfig], the puller can dynamically set and select different stream types (small resolution is one-half of the standard layer).
+     * Use cases: In general, when the network is weak or the rendered UI window is small, you can choose to pull videos with small resolutions to save bandwidth.
+     * When to call: before or after called [startPlayingStream].
+     * Restrictions: None.
+     * @param {string} streamID - Stream ID.
+     * @param {ZegoVideoStreamType} streamType - Video stream type.
+     */
+     setPlayStreamVideoType(streamID, streamType){
+        this.ZegoNativeInstance.setPlayStreamVideoType({streamID, streamType});
+    }
+
+    /**
+     * Set the factors of concern that trigger traffic control.
+     *
+     * Description: Use this interface to control whether to start traffic control due to poor remote network conditions.
+     * Default value: Default is disable.
+     * When to call: After the engine is created [createEngine], Called before [startPublishingStream] can take effect.
+     * Restrictions: The traffic control must be turned on [enableTrafficControl].
+     * Related APIs: [enableTrafficControl.
+     * @param {ZegoTrafficControlFocusOnMode} mode - When LOCAL_ONLY is selected, only the local network status is concerned. When choosing REMOTE, also take into account the remote network.
+     * @param {ZegoPublishChannel} channel - When LOCAL_ONLY is selected, only the local network status is concerned. When choosing REMOTE, also take into account the remote network.
+     */
+     setTrafficControlFocusOn(mode, channel = ZegoPublishChannel.Main){
+        this.ZegoNativeInstance.setTrafficControlFocusOn({mode, channel});
     }
 
     /**
@@ -1528,6 +1690,18 @@ class ZegoExpressEngine extends EventEmitter {
      */
 
     /**
+     * @event ZegoExpressEngine#onRemoteSpeakerStateUpdate
+     * @desc The callback triggered when the state of the remote speaker changes.
+     *
+     * When the state of the remote speaker device is changed, by listening to the callback, it is possible to obtain an event related to the remote speaker, which can be used to prompt the user that the audio may be abnormal.
+     * Developers of 1v1 education scenarios or education small class scenarios and similar scenarios can use this callback notification to determine whether the speaker device of the remote publishing stream device is working normally, and preliminary understand the cause of the device problem according to the corresponding state.
+     * This callback will not be called back when the remote stream is play from the CDN.
+     * @property {object} result - param object
+     * @property {string} result.streamID - Stream ID
+     * @property {ZegoRemoteDeviceState} result.state - Remote speaker status
+     */
+
+    /**
      * @event ZegoExpressEngine#onIMRecvBroadcastMessage
      * @desc The callback triggered when Broadcast Messages are received.
      *
@@ -1607,6 +1781,14 @@ class ZegoExpressEngine extends EventEmitter {
      * @property {ZegoNetworkSpeedTestType} result.type - Uplink or downlink
      */
 
+    /**
+     * @event ZegoExpressEngine#onRecvExperimentalAPI
+     * @desc Receive custom JSON content
+     *
+     * @property {object} result - param object
+     * @property {string} result.content - JSON string content
+     */
+
 
     callEmit() {
         try {
@@ -1629,14 +1811,14 @@ class ZegoExpressEngine extends EventEmitter {
                 this.VideoViewManager.remoteGLRenders[streamID].drawVideoFrame(videoFrame);
             }
             else if (arguments[0] === "onDebugInfo") {
-                if (this.isTestEnv) {
+                if (this.isConsolePrintDebugInfo) {
                     console.info(arguments[1]["info"]);
                 }
             }
             else if (arguments[0] === "onDebugError") {
-                if (this.isTestEnv) {
+                if (this.isConsolePrintDebugInfo) {
                     console.error(`onDebugError: funcName=${arguments[1]["funcName"]} ErrorCode=${arguments[1]["errorCode"]} ErrorInfo=${arguments[1]["errorInfo"]}`)
-                    dialog.showErrorBox(arguments[1]["alertTitle"], arguments[1]["alertBody"]);
+                    // dialog.showErrorBox(arguments[1]["alertTitle"], arguments[1]["alertBody"]);
                 }
             }
             else if(arguments[0].startsWith("MEDIAPLAYER_")){
@@ -1651,7 +1833,7 @@ class ZegoExpressEngine extends EventEmitter {
                 "onCapturedSoundLevelUpdate", "onRemoteSoundLevelUpdate",
                 "onCapturedAudioSpectrumUpdate", "onRemoteAudioSpectrumUpdate",
                 "MEDIAPLAYER_onMediaPlayerPlayingProgress", "onRoomOnlineUserCountUpdate"];
-                if(!highFrequencyCallbacks.includes(arguments[0]) && this.isTestEnv){
+                if(!highFrequencyCallbacks.includes(arguments[0]) && this.isConsolePrintDebugInfo){
                     console.log(arguments[0], arguments[1]);
                 }
             }

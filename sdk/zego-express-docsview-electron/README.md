@@ -28,8 +28,7 @@ Create a ZEGO account and get AppID and AppSign required for SDK initialization 
         appSign, // Array
         dataFolder,
         cacheFolder,
-        logFolder,
-        isTestEnv
+        logFolder
     });
     // create Docsview
     let docView = zegoExpressDocs.createView(parentID);
@@ -39,6 +38,15 @@ Create a ZEGO account and get AppID and AppSign required for SDK initialization 
 1. [Doc Center](https://doc-zh.zego.im/zh/6491.html) - See more docs about zego-express-docsview-electron
 
 ## ChangeLog
+
+### v1.23.0
+
+
+**Update:**
+
+- In view of the problem that the source of onUpload event and onLoadFile event cannot be distinguished when the interface is called concurrently, the uploadFile and loadFile interfaces are reconstructed, and interface callbacks are added.
+
+- In response to the problem that dynamic PPT resources cannot be loaded in a weak network environment, a timeout retry mechanism has been added.
 
 ### v1.22.0
 

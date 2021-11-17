@@ -3,8 +3,10 @@ const ZegoWhiteBoardController = require('./ZegoWhiteBoardController.js').defaul
 
 
 class ZegoWhiteBoardView {
+  instance = null;
   constructor() {
-    return new ZegoWhiteBoardController(ZegoWhiteBoardService);
+    //const opt = {};
+    return this.instance || (this.instance = new ZegoWhiteBoardController(ZegoWhiteBoardService));
   }
 }
 

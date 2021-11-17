@@ -3,9 +3,6 @@
 {
     roomid: "",
     username: "",
-
-    whiteboard_env: "-test",
-    docs_env: "test",
     fontFamily: "ZgFont",
     thumbnailMode: "1",
     pptStepMode: "1",

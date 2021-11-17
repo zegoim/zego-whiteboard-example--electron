@@ -78,7 +78,7 @@ const ZegoRoomState =
 const ZegoPublishChannel =
 {
     /** 
-     * @description Main publish channel
+     * @description Main publish channel, default publish channel.
      */
     Main: 0,
     /** 
@@ -217,6 +217,18 @@ const ZegoVoiceChangerPreset =
      * @description Fresh(Female) voice effect
      */
     FemaleFresh: 10,
+    /** 
+     * @description Electronic effects in C major voice effect
+     */
+    MajorC: 11,
+    /** 
+     * @description Electronic effects in A minor voice effect
+     */
+    MinorA: 12,
+    /** 
+     * @description Electronic effects in harmonic minor voice effect
+     */
+    HarmonicMinor: 13,
 }
 
 /**
@@ -269,6 +281,10 @@ const ZegoReverbPreset =
      * @description Vocal concert reverb effect
      */
     VocalConcert: 10,
+    /** 
+     * @description Gramophone reverb effect
+     */
+    GramoPhone: 11,
 }
 
 /**
@@ -329,6 +345,10 @@ const ZegoStreamQualityLevel =
      * @description Failed
      */
     Die: 4,
+    /** 
+     * @description Unknown
+     */
+    Unknown: 5,
 }
 
 /**
@@ -458,11 +478,11 @@ const ZegoPlayerVideoLayer =
 const ZegoAECMode =
 {
     /** 
-     * @description Aggressive echo cancellation may affect the sound quality slightly, but the echo will be very clean
+     * @description Aggressive echo cancellation may affect the sound quality slightly, but the echo will be very clean.
      */
     Aggressive: 0,
     /** 
-     * @description Moderate echo cancellation, which may slightly affect a little bit of sound, but the residual echo will be less
+     * @description Moderate echo cancellation, which may slightly affect a little bit of sound, but the residual echo will be less.
      */
     Medium: 1,
     /** 
@@ -478,15 +498,15 @@ const ZegoAECMode =
 const ZegoANSMode =
 {
     /** 
-     * @description Soft ANS
+     * @description Soft ANS. In most instances, the sound quality will not be damaged, but some noise will remain.
      */
     Soft: 0,
     /** 
-     * @description Medium ANS
+     * @description Medium ANS. It may damage some sound quality, but it has a good noise reduction effect.
      */
     Medium: 1,
     /** 
-     * @description Aggressive ANS
+     * @description Aggressive ANS. It may significantly impair the sound quality, but it has a good noise reduction effect.
      */
     Aggressive: 2,
 }
@@ -498,19 +518,19 @@ const ZegoANSMode =
 const ZegoTrafficControlProperty =
 {
     /** 
-     * @description Basic
+     * @description Basic (Adaptive (reduce) video bitrate)
      */
     Basic: 0,
     /** 
-     * @description Adaptive FPS
+     * @description Adaptive (reduce) video FPS
      */
     AdaptiveFPS: 1,
     /** 
-     * @description Adaptive resolution
+     * @description Adaptive (reduce) video resolution
      */
     AdaptiveResolution: 1 << 1,
     /** 
-     * @description Adaptive Audio bitrate
+     * @description Adaptive (reduce) audio bitrate
      */
     AdaptiveAudioBitrate: 1 << 2,
 }
@@ -753,6 +773,10 @@ const ZegoRemoteDeviceState =
      * @description The system is under high load pressure and may cause abnormal equipment.
      */
     BySystemPressure: 14,
+    /** 
+     * @description The remote device is not supported to publish the device state.
+     */
+    NotSupport: 15,
 }
 
 /**
@@ -817,6 +841,10 @@ const ZegoMixerInputContentType =
      * @description Mix stream for both audio and video
      */
     Video: 1,
+    /** 
+     * @description Mix stream for video only
+     */
+    VideoOnly: 2,
 }
 
 /**
@@ -1168,9 +1196,52 @@ const ZegoNetworkSpeedTestType =
 }
 
 /**
+ * Factors that trigger traffic control
+ * @enum {number}
+ */
+ const ZegoTrafficControlFocusOnMode =
+{
+     /** 
+      * @description Focus only on the local network
+      */
+     ZegoTrafficControlFounsOnLocalOnly: 0,
+     /** 
+      * @description Pay attention to the local network, but also take into account the remote network, currently only effective in the 1v1 scenario
+      */
+     ZegoTrafficControlFounsOnRemote: 1,
+}
+
+ /**
+ * Video stream type
+ * @enum {number}
+ */
+const ZegoVideoStreamType =
+{
+    /** 
+     * @description The type to be played depends on the network status
+     */
+    Default: 0,
+    /** 
+     * @description small resolution type
+     */
+    Small: 1,
+    /** 
+     * @description big resolution type
+     */
+    Big: 2,
+}
+
+/**
  * @typedef {Object} ZegoLogConfig - Log config.
  * @property {string} logPath - Log file save path
  * @property {number} logSize - The maximum log file size (Bytes). The default maximum size is 5MB (5 * 1024 * 1024 Bytes)
+ */
+
+/**
+ * @typedef {Object} ZegoEngineProfile - Profile for create engine
+ * @property {number} appID - Application ID issued by ZEGO for developers, please apply from the ZEGO Admin Console https://console-express.zego.im The value ranges from 0 to 4294967295.
+ * @property {string} appSign - Application signature for each AppID, please apply from the ZEGO Admin Console. Application signature is a 64 character string. Each character has a range of '0' ~ '9', 'a' ~ 'z'.
+ * @property {ZegoScenario} scenario - The application scenario. Developers can choose one of ZegoScenario based on the scenario of the app they are developing, and the engine will preset a more general setting for specific scenarios based on the set scenario. After setting specific scenarios, developers can still call specific functions to set specific parameters if they have customized parameter settings.
  */
 
 /**
@@ -1508,6 +1579,8 @@ module.exports = {
     ZegoDataRecordType,
     ZegoDataRecordState,
     ZegoNetworkMode,
-    ZegoNetworkSpeedTestType
+    ZegoNetworkSpeedTestType,
+	ZegoTrafficControlFocusOnMode,
+    ZegoVideoStreamType
 }
 
