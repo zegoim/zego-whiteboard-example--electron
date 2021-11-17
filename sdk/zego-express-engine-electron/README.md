@@ -17,7 +17,7 @@ Create a ZEGO account and get AppID and AppSign required for SDK initialization 
     console.log("zego express engine version: ", zgEngine.getVersion());
 
     // init sdk
-    zgEngine.init(appID=xxx, appSign="xxx", scenario=0);
+    zgEngine.initWithProfile(appID=xxx, appSign="xxx", scenario=0);
 
     // use other API to achieve video communication
     // loginRoom => startPublishingStream => startPlayingStream

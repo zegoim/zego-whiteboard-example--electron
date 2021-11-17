@@ -39,6 +39,11 @@ Create a ZEGO account and get AppID and AppSign required for SDK initialization 
 
 ## ChangeLog
 
+### v2.1.5
+**Update:**
+
+- Remove the test environment.
+
 ### v1.23.0
 
 

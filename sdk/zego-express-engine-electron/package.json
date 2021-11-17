@@ -1,6 +1,6 @@
 {
     "name": "zego-express-engine-electron",
-    "version": "0.25.2.662_whiteboard",
+    "version": "0.25.2-663-whiteboard",
     "main": "ZegoExpressEngine.js",
     "author": "zego.im",
     "description": "zego-express-engine-electron",
