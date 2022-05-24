@@ -127,6 +127,25 @@ function getRemoteConfig() {
         },
         'json'
     );
+    if (zegoConfig.fileListUrl && zegoConfig.fileListUrl.indexOf('https') != -1) {
+        $.get(
+            zegoConfig.fileListUrl,
+            function (data) {
+                $('#fildIDList').html(
+                    '<option value="">--</option>' +
+                        data[zegoConfig.docs_env ? 'docs_alpha' : 'docs_prod']
+                            .map(function(v) {
+                                return `<option value="${v.id}">${v.name}</option>`;
+                            })
+                            .join('')
+                );
+                $('#fildIDList').on('change', function() {
+                    $('#fileID').val($(this).val());
+                });
+            },
+            'json'
+        );
+    }
 }
 
 // 切换面板

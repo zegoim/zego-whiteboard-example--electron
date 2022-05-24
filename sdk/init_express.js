@@ -19,17 +19,14 @@ var zegoDocs;
 // 初始化 zegoExpressEngine
 (
     async function () {
-        zegoExpressEngine.setEngineConfig &&
-            zegoExpressEngine.setEngineConfig({
-                logConfig: {
-                    logPath: logDir,
-                    logSize: 5 * 1024 * 1024
-                }
+        zegoExpressEngine.setLogConfig &&
+            zegoExpressEngine.setLogConfig({
+                logPath: logDir,
+                logSize: 5 * 1024 * 1024
             });
 
-        await zegoExpressEngine.initWithProfile({
+        await zegoExpressEngine.createEngine({
             appID: zegoConfig.appID,
-            appSign: zegoConfig.appSignStr,
             scenario: 0
         });
 
@@ -38,17 +35,12 @@ var zegoDocs;
         // 初始化 ZegoDocs
         zegoDocs = new ZegoExpressDocs({
             appID: zegoConfig.appID,
-            appSign: zegoConfig.appSign,
             dataFolder: logDir,
             cacheFolder: logDir,
-            logFolder: logDir
+            logFolder: logDir,
+            token,
+            userID: zegoConfig.userid
         });
-        switch (zegoConfig.docs_env) {
-            case 'beta':
-            case 'alpha':
-                zegoDocs.setConfig('set_alpha_env', true);
-                break;
-        }
     }
 )()
 // 业务数据
@@ -64,13 +56,26 @@ function loginRoom() {
                 $('#idNames').html('房间所有用户ID：' + userIDList.toString());
             }
         });
+
+        zegoExpressEngine.on('onRoomTokenWillExpire', (res) => {
+            console.warn('onRoomTokenWillExpire', res);
+            const newToken = ''
+            if (!newToken) {
+                console.error('token 即将过期，请更新')
+            } else {
+                zegoExpressEngine.renewToken(res.roomID, newToken)
+                zegoDocs.renewToken(newToken)
+            }
+
+        });
         zegoExpressEngine.loginRoom(
             zegoConfig.roomid, {
                 userID: zegoConfig.userid,
                 userName: zegoConfig.username
             }, {
                 maxMemberCount: 10,
-                isUserStatusNotify: true
+                isUserStatusNotify: true,
+                token
             }
         );
         resolve();
